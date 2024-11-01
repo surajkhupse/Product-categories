@@ -11,6 +11,7 @@ import {
   MenuItem,
   OutlinedInput,
   Select,
+  SelectChangeEvent,
   Typography,
 } from "@mui/material";
 
@@ -29,9 +30,9 @@ const MenuProps = {
 export interface sideNavProps {
   categoryList: string[];
   products: any[];
-  onSelectValue: (data: string) => any;
+  onSelectValue: (data: string[]) => any;
   onClearFilters : () => any;
-  onRunReport: (category: string, selectedProduct: any[]) => any;
+  onRunReport: (category: string[], selectedProduct: any[]) => any;
   reportRun : any
 }
 
@@ -39,42 +40,38 @@ const SideNav = (props: sideNavProps) => {
   console.log("product", props.products);
 
   const [productName, setProductName] = React.useState<string[]>([]);
-  const [selectedCategory, setSelectedCategory] = React.useState<string>("");
+  const [selectedCategory, setSelectedCategory] = React.useState<string[]>([]);
   const [isRunningReport, setIsRunningReport] = React.useState(false);
 
-  const handleChange = (event: any) => {
+  const handleChange = (event: SelectChangeEvent<typeof productName>) => {
     const {
       target: { value },
     } = event;
     const updatedProductNames = typeof value === "string" ? value.split(",") : value;
     setProductName(updatedProductNames);
-    props.onSelectValue && props.onSelectValue(updatedProductNames);
+    props.onSelectValue && props.onSelectValue(productName);
   };
 
   const clearFilter = () => {
     setProductName([]);
-    setSelectedCategory("");
+    setSelectedCategory([]);
     props.onClearFilters(); 
   }
 
   const handleCategoryChange = (event: any) => {
     const selectedValue = event.target.value;
-    setSelectedCategory(selectedValue);
+    setSelectedCategory(typeof selectedValue === "string" ? selectedValue.split(",") : selectedValue);
     setProductName([]); 
    };
 
-  // const filteredProducts = selectedCategory
-  //   ? props.products.filter((product) => product.category === selectedCategory)
-  //   : props.products;
-
-  const filteredProducts = selectedCategory
+  const filteredProducts = selectedCategory.length > 0
   ? props.products.filter((product) =>
-      product.category === selectedCategory && (productName.length === 0 || productName.includes(product.title))
+      selectedCategory.includes(product.category)
     )
-  : props.products;
+  : [];
 
 
-  const habdleBugReport = () => {
+  const handleBugReport = () => {
     debugger
     setIsRunningReport(true);
     const selectedProducts = productName.length > 0 
@@ -85,8 +82,6 @@ const SideNav = (props: sideNavProps) => {
         setIsRunningReport(false);
       }, 3000);
   };
-
-
 
 
   return (
@@ -152,7 +147,7 @@ const SideNav = (props: sideNavProps) => {
       </div>
 
       <div className="bottom-0 ms-3 ms-lg-5 ms-md-3 ms-sm-3 position-absolute">
-        <Button variant="contained" size="large" onClick={habdleBugReport} disabled={!selectedCategory || props.reportRun || isRunningReport} >
+        <Button variant="contained" size="large" onClick={handleBugReport} disabled={!selectedCategory || props.reportRun || isRunningReport} >
           {isRunningReport ? (
             <Box sx={{ display: 'flex', alignItems: 'center' }}>
               <CircularProgress size={24} color="inherit" />

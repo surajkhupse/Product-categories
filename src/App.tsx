@@ -1,6 +1,5 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-import { useEffect, useState } from 'react'
-import { Alert } from '@mui/material'
+import { useEffect } from 'react'
+import { Alert, CircularProgress } from '@mui/material'
 import ChartComponent from './Component/chartComponent';
 import SideNav from './Component/sideNav';
 import React from 'react';
@@ -35,7 +34,6 @@ const App = () => {
 
   useEffect(() => {
     const fetchProductData = async () => {
-      debugger
       setIsLoading(true);
       try {
         const response = await fetch('https://dummyjson.com/products/category/smartphones ');
@@ -60,26 +58,7 @@ const App = () => {
     setReportRun(false);
   };
 
-
-  //   const handleRunReport = (selectedCategory : any, selectedProduct : any) => {
-  //  debugger
-  //     // Filter products based on selected category
-  //     const filteredProducts = productData.filter((product : any) => product.category === selectedCategory);
-
-  //     // Create categories and seriesData based on selected products
-  //     const categories = selectedProducts.map((product: any) => product.title);
-  //     const seriesData = selectedProducts.map((product: any) => product.price);
-
-  //     // Update chart data state
-  //     setChartData({ categories, seriesData });
-  //     setSelectedProducts(filteredProducts);
-  //     setReportRun(true); 
-
-  //     console.log("Report is being generated with the following data:", { categories, seriesData });
-  //   };
-
   const handleRunReport = (selectedCategory: any, selectedProducts: any[]) => {
-    debugger;
     
     // If `selectedProducts` is empty, show all products within the selected category
     const filteredProducts = selectedProducts.length > 0 
@@ -95,12 +74,10 @@ const App = () => {
     setSelectedProducts(filteredProducts);
     setReportRun(true); 
   
-    console.log("Report is being generated with the following data:", { categories, seriesData });
   };
     
 
   useEffect(() => {
-    debugger
     if (categoryData.length > 0 && productData.length > 0) {
       const categories = categoryData;
       const seriesData = productData.map((product: any) => product.price);
@@ -123,32 +100,38 @@ const App = () => {
 
   return (
     <div className="container-fluid">
-      <div className="mt-5 mx-5 row vh-100">
-        {isLoading && <p>Loading...</p>}
-        <div className="col-md-3 border ">
-          <SideNav 
-          categoryList={categoryData} 
-          products={productData} 
-          onSelectValue={handleProductData} onClearFilters={clearChartFilters} onRunReport={handleRunReport} reportRun={reportRun} />
+      {isLoading  ? (
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+          <CircularProgress size="10rem" />
         </div>
-        <div className="col-md-9">
-          <div className='mt-5 pt-5'>
-            <ChartComponent
-              categories={chartData.categories} seriesData={chartData.seriesData} reportRun={reportRun} />
+      ) : (
+        <div className="mt-5 mx-5 row vh-100">
+          <div className="col-md-3 border">
+            <SideNav 
+              categoryList={categoryData} 
+              products={productData} 
+              onSelectValue={handleProductData} 
+              onClearFilters={clearChartFilters} 
+              onRunReport={handleRunReport} 
+              reportRun={reportRun} 
+            />
           </div>
-        </div>
-      </div>
-      <div>
-        {
-          error && (
-            <div>
-              <Alert severity="error">{error}</Alert>
-
+          <div className="col-md-9">
+            <div className="mt-5 pt-5">
+              <ChartComponent
+                categories={chartData.categories} 
+                seriesData={chartData.seriesData} 
+                reportRun={reportRun} 
+              />
             </div>
-          )
-        }
-
-      </div>
+          </div>
+          {error && (
+            <Alert severity="error" style={{ marginTop: '10px' }}>
+              {error.message || "An error occurred"}
+            </Alert>
+          )}
+        </div>
+      )}
     </div>
   )
 }
